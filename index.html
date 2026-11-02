@@ -29,14 +29,17 @@ td,th{text-align:left;padding:10px 12px 10px 0;vertical-align:top}tr+tr td{borde
 .pill.unsubscribe,.pill.not_interested,.pill.bounce,.pill.fail{background:var(--bad);color:#8d2f1c}.pill.out_of_office,.pill.not_now,.pill.other{background:var(--warn);color:#6b5300}
 .mermaid{background:var(--card);border-radius:14px;padding:12px;overflow-x:auto}
 .frame{border-radius:14px;overflow:hidden;background:#fff;height:620px}.frame iframe{width:100%;height:100%;border:0}
-footer{padding:48px 0 72px;color:var(--muted);font-size:.94rem}code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
+video.vid{width:100%;max-width:100%;border-radius:16px;background:#fff;display:block}footer{padding:48px 0 72px;color:var(--muted);font-size:.94rem}code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 </style></head>
 <body><div class="wrap">
   <header>
     <h1>Recruiter Outreach Agent, run end to end</h1>
     <p class="lead">An AI email agent built with n8n. It imports recruiter contacts, writes a personalised email, asks for approval in Slack, sends it from Gmail with follow-ups, classifies every reply, stops when someone answers, and reports the numbers. This page is a recording of a full run through the real workflows, with emails caught by a local mail server and a fictional sample brand and recruiters.</p>
-    <div class="actions"><a class="btn" href="#wf-h">See the workflows</a><a class="btn ghost" href="#emails">See the emails</a><a class="btn ghost" href="dashboard.html">Open the dashboard</a></div>
+    <div class="actions"><a class="btn" href="#wf-h">See the workflows</a><a class="btn ghost" href="#vid-h">Watch the 1-minute video</a><a class="btn ghost" href="#emails">See the emails</a><a class="btn ghost" href="dashboard.html">Open the dashboard</a></div>
   </header>
+
+  <section aria-labelledby="vid-h"><h2 id="vid-h">One-minute walkthrough</h2><p class="sub">Import, AI writing, Slack approval, sending, reply classification, follow-ups and the report, using the recorded run's real numbers.</p>
+    <video class="vid" controls muted playsinline preload="metadata" poster="cover.png" src="demo-video.mp4">Your browser can't play this video.</video></section>
 
   <section aria-labelledby="res-h"><h2 id="res-h">Results of the recorded run</h2><p class="sub">21 of 21 automated checks passed.</p>
     <div class="stats">
