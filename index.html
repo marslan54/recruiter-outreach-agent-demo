@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recruiter Outreach Agent: live demo</title>
+<meta name="description" content="An n8n AI email agent: import, personalise, approve in Slack, send from Gmail, follow up, classify replies, report.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f4;--ink:#1d2b2a;--muted:#5a6766;--accent:#2f6f5e;--card:#fff;--soft:#e7efe9;--warn:#f6efd6;--bad:#f8e4dc;--line:#e6e9e4}
+*{box-sizing:border-box}html,body{color-scheme:light}body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Inter Tight",system-ui,sans-serif}
+a{color:var(--accent)}.wrap{max-width:1100px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-left))}
+header{padding:64px 0 24px}h1{font-size:clamp(2rem,1.4rem + 2.6vw,3.2rem);line-height:1.06;letter-spacing:-.03em;margin:0 0 16px;font-weight:600}
+h2{font-size:1.45rem;letter-spacing:-.02em;margin:0 0 6px;font-weight:600}h3{font-size:1.05rem;margin:0 0 6px}
+.lead{font-size:1.15rem;color:var(--muted);max-width:46rem;margin:0}.sub{color:var(--muted);margin:0 0 18px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;background:var(--ink);color:#fff;text-decoration:none;font-weight:500}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+section{padding:40px 0}.stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{background:var(--card);border-radius:16px;padding:16px 18px}.stat b{display:block;font-size:1.7rem;letter-spacing:-.02em}.stat span{color:var(--muted);font-size:.92rem}
+.card{background:var(--card);border-radius:18px;padding:20px 22px}.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:10px}.steps li{background:var(--card);border-radius:14px;padding:14px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.steps li::before{counter-increment:s;content:counter(s);grid-row:span 2;width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:600;color:var(--accent)}
+.steps b{font-weight:600}.steps span{color:var(--muted)}
+details{background:var(--card);border-radius:14px;padding:12px 18px;margin-bottom:8px}summary{cursor:pointer;font-weight:500}
+summary small{color:var(--muted);font-weight:400}pre.mail{white-space:pre-wrap;font:14px/1.55 ui-sans-serif,system-ui,sans-serif;background:var(--bg);border-radius:10px;padding:14px;margin:12px 0 4px;overflow-x:auto}
+.slack{background:var(--card);border-radius:14px;padding:14px 18px;margin-bottom:10px;border-left:4px solid #4a154b}.slack .who{font-weight:600;font-size:.9rem;color:#4a154b;margin-bottom:4px}
+.sbtn{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:3px 10px;margin:6px 6px 0 0;font-weight:600;font-size:.88rem;background:#fff}.slack .k{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tbl{background:var(--card);border-radius:18px;padding:6px 18px;overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.94rem;min-width:620px}
+td,th{text-align:left;padding:10px 12px 10px 0;vertical-align:top}tr+tr td{border-top:1px solid var(--line)}th{color:var(--muted);font-weight:500}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:600;background:var(--soft);color:#24563a;white-space:nowrap}
+.pill.unsubscribe,.pill.not_interested,.pill.bounce,.pill.fail{background:var(--bad);color:#8d2f1c}.pill.out_of_office,.pill.not_now,.pill.other{background:var(--warn);color:#6b5300}
+.mermaid{background:var(--card);border-radius:14px;padding:12px;overflow-x:auto}
+.frame{border-radius:14px;overflow:hidden;background:#fff;height:620px}.frame iframe{width:100%;height:100%;border:0}
+footer{padding:48px 0 72px;color:var(--muted);font-size:.94rem}code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
+</style></head>
+<body><div class="wrap">
+  <header>
+    <h1>Recruiter Outreach Agent, run end to end</h1>
+    <p class="lead">An AI email agent built with n8n. It imports recruiter contacts, writes a personalised email, asks for approval in Slack, sends it from Gmail with follow-ups, classifies every reply, stops when someone answers, and reports the numbers. This page is a recording of a full run through the real workflows, with emails caught by a local mail server and a fictional sample brand and recruiters.</p>
+    <div class="actions"><a class="btn" href="#wf-h">See the workflows</a><a class="btn ghost" href="#emails">See the emails</a><a class="btn ghost" href="dashboard.html">Open the dashboard</a></div>
+  </header>
+
+  <section aria-labelledby="res-h"><h2 id="res-h">Results of the recorded run</h2><p class="sub">21 of 21 automated checks passed.</p>
+    <div class="stats">
+      <div class="stat"><b>15</b><span>rows imported from CSV</span></div>
+      <div class="stat"><b>12</b><span>new contacts</span></div>
+      <div class="stat"><b>3</b><span>skipped (duplicate, opted out, invalid)</span></div>
+      <div class="stat"><b>11</b><span>first emails sent</span></div>
+      <div class="stat"><b>5</b><span>follow-ups sent</span></div>
+      <div class="stat"><b>7</b><span>replied (63.6%)</span></div>
+      <div class="stat"><b>2</b><span>interested</span></div>
+      <div class="stat"><b>3</b><span>unsubscribed</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="flow-h"><h2 id="flow-h">What happened, step by step</h2>
+    <ol class="steps">
+      <li><b>Import</b><span>15 CSV rows: 12 new, 1 duplicate with different capitals, 1 invalid address, 1 person who had unsubscribed before. Importing again added nobody.</span></li>
+      <li><b>Draft and approve</b><span>One personalised email per contact, each posted to Slack with single-use Approve and Reject links. 16 were approved and 1 rejected. Nothing was sent before approval, and a tampered link was refused.</span></li>
+      <li><b>Send</b><span>11 emails sent one at a time, each with an unsubscribe link and postal address. Running the sender again sent nothing twice.</span></li>
+      <li><b>Replies</b><span>Six replies classified: interested ×2, not interested, unsubscribe, out of office, bounce. Each stopped that person's sequence. Interested recruiters triggered a Slack alert. A duplicate reply was processed once.</span></li>
+      <li><b>Unsubscribe</b><span>One recruiter clicked the unsubscribe link and was suppressed everywhere.</span></li>
+      <li><b>Follow-ups</b><span>5 follow-ups went only to people who were emailed and hadn't replied or opted out. A reply after the follow-up stopped the sequence.</span></li>
+      <li><b>Report</b><span>The live dashboard and the daily Slack summary show the same numbers.</span></li>
+    </ol>
+  </section>
+
+  <section id="emails" aria-labelledby="em-h"><h2 id="em-h">Every email sent</h2><p class="sub">Captured exactly as delivered (to a local mail server, not real inboxes).</p>
+    <div class="grid"><div><h3>First emails (11)</h3><details><summary>Free job posts for Northlight Animation <small>to maya.chen@northlight-animation.example.com · first email</small></summary><pre class="mail">Hi Maya,
+
+Talent Board is a free platform where animation studios hiring for story, layout and CG roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they are hiring storyboard artists for a new feature film, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Northlight Animation so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=1&amp;t=…</pre></details><details><summary>Free job posts for Pixelforge Games <small>to leo.martins@pixelforge.example.com · first email</small></summary><pre class="mail">Hi Leo,
+
+Talent Board is a free platform where game studios hiring designers, artists and engineers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw the studio just opened a QA and tools team, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Pixelforge Games so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=2&amp;t=…</pre></details><details><summary>Free job posts for Ember FX <small>to priya.nair@emberfx.example.com · first email</small></summary><pre class="mail">Hi Priya,
+
+Talent Board is a free platform where VFX houses staffing up for compositing, FX and pipeline roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they post compositing internships every spring, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Ember FX so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=3&amp;t=…</pre></details><details><summary>Free job posts for Lumen Interactive <small>to hana.sato@lumen-interactive.example.com · first email</small></summary><pre class="mail">Hi Hana,
+
+Talent Board is a free platform where game studios hiring designers, artists and engineers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they run portfolio review workshops for students, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Lumen Interactive so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=5&amp;t=…</pre></details><details><summary>Free job posts for Cascade VFX <small>to diego.ruiz@cascadevfx.example.com · first email</small></summary><pre class="mail">Hi Diego,
+
+Talent Board is a free platform where VFX houses staffing up for compositing, FX and pipeline roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Cascade VFX so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=6&amp;t=…</pre></details><details><summary>Free job posts for Paperkite Studio <small>to amara.diallo@paperkite.example.com · first email</small></summary><pre class="mail">Hi Amara,
+
+Talent Board is a free platform where animation studios hiring for story, layout and CG roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw the studio is staffing a new animated series, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Paperkite Studio so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=7&amp;t=…</pre></details><details><summary>Free job posts for Orbit Labs <small>to tom.becker@orbitlabs.example.com · first email</small></summary><pre class="mail">Hi Tom,
+
+Talent Board is a free platform where tech companies hiring designers and creative technologists post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they hire creative technologists for AR projects, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Orbit Labs so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=8&amp;t=…</pre></details><details><summary>Free job posts for Foxglove Games <small>to nina.kowalski@foxglove-games.example.com · first email</small></summary><pre class="mail">Hi Nina,
+
+Talent Board is a free platform where game studios hiring designers, artists and engineers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Foxglove Games so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=9&amp;t=…</pre></details><details><summary>Free job posts for Studio Meridian <small>to ravi.patel@studio-meridian.example.com · first email</small></summary><pre class="mail">Hi Ravi,
+
+Talent Board is a free platform where design teams looking for product, motion and brand designers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they are hiring motion designers, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Studio Meridian so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=10&amp;t=…</pre></details><details><summary>Free job posts for Quiet Moth <small>to ella.brooks@quietmoth.example.com · first email</small></summary><pre class="mail">Hi Ella,
+
+Talent Board is a free platform where animation studios hiring for story, layout and CG roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Quiet Moth so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=12&amp;t=…</pre></details><details><summary>Free job posts for Ironbark Interactive <small>to olu.adeyemi@ironbark.example.com · first email</small></summary><pre class="mail">Hi Olu,
+
+Talent Board is a free platform where game studios hiring designers, artists and engineers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they sponsor a student game jam each year, so this seemed relevant.
+
+Posting is free and takes about five minutes. Would it be useful if I set up a profile for Ironbark Interactive so you can try it on your next opening?
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=13&amp;t=…</pre></details></div>
+    <div><h3>Follow-ups (5)</h3><details><summary>Re: Free job posts for Quiet Moth <small>to ella.brooks@quietmoth.example.com · follow-up</small></summary><pre class="mail">Hi Ella,
+
+Following up on my note about posting Quiet Moth&#x27;s openings on Talent Board for free. If you have a role, internship or event coming up, I&#x27;m happy to post the first one for you so you can see the response.
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=12&amp;t=…</pre></details><details><summary>Re: Free job posts for Studio Meridian <small>to ravi.patel@studio-meridian.example.com · follow-up</small></summary><pre class="mail">Hi Ravi,
+
+Following up on my note about posting Studio Meridian&#x27;s openings on Talent Board for free. If you have a role, internship or event coming up, I&#x27;m happy to post the first one for you so you can see the response.
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=10&amp;t=…</pre></details><details><summary>Re: Free job posts for Ironbark Interactive <small>to olu.adeyemi@ironbark.example.com · follow-up</small></summary><pre class="mail">Hi Olu,
+
+Following up on my note about posting Ironbark Interactive&#x27;s openings on Talent Board for free. If you have a role, internship or event coming up, I&#x27;m happy to post the first one for you so you can see the response.
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=13&amp;t=…</pre></details><details><summary>Re: Free job posts for Foxglove Games <small>to nina.kowalski@foxglove-games.example.com · follow-up</small></summary><pre class="mail">Hi Nina,
+
+Following up on my note about posting Foxglove Games&#x27;s openings on Talent Board for free. If you have a role, internship or event coming up, I&#x27;m happy to post the first one for you so you can see the response.
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=9&amp;t=…</pre></details><details><summary>Re: Free job posts for Paperkite Studio <small>to amara.diallo@paperkite.example.com · follow-up</small></summary><pre class="mail">Hi Amara,
+
+Following up on my note about posting Paperkite Studio&#x27;s openings on Talent Board for free. If you have a role, internship or event coming up, I&#x27;m happy to post the first one for you so you can see the response.
+
+Thanks,
+Sam
+
+--
+Sam at Talent Board (demo)
+Talent Board (fictional demo) · 100 Example Ave · Anytown, CA 00000
+Not interested? Unsubscribe: http://localhost:5678/webhook/unsubscribe?c=7&amp;t=…</pre></details></div></div>
+  </section>
+
+  <section aria-labelledby="sl-h"><h2 id="sl-h">What the team sees in Slack</h2><p class="sub">Two of the 21 approval requests, then every alert and report from the run.</p><div class="slack"><div class="who">Outreach Agent <span class="k">· approval request</span></div><b>Approve outreach #1</b> (first email) to Maya Chen, Senior Talent Acquisition Partner at Northlight Animation &lt;maya.chen@northlight-animation.example.com&gt;<br><b>Subject:</b> Free job posts for Northlight Animation<br>Hi Maya,<br><br>Talent Board is a free platform where animation studios hiring for story, layout and CG roles post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw they are hiring storyboard artists for a new feature film, so this seemed relevant.<br><br>Posting is free and takes about five minutes. Would it be useful if I set up a profile for Northlight Animation so you can try it on your next opening?<br><br>Thanks,<br>Sam<br><br><span class="sbtn">Approve and queue</span> <span class="sbtn">Reject</span></div><div class="slack"><div class="who">Outreach Agent <span class="k">· approval request</span></div><b>Approve outreach #2</b> (first email) to Leo Martins, Technical Recruiter at Pixelforge Games &lt;leo.martins@pixelforge.example.com&gt;<br><b>Subject:</b> Free job posts for Pixelforge Games<br>Hi Leo,<br><br>Talent Board is a free platform where game studios hiring designers, artists and engineers post jobs, internships, workshops and recruiting events, and reach artists and developers who are actively looking. I saw the studio just opened a QA and tools team, so this seemed relevant.<br><br>Posting is free and takes about five minutes. Would it be useful if I set up a profile for Pixelforge Games so you can try it on your next opening?<br><br>Thanks,<br>Sam<br><br><span class="sbtn">Approve and queue</span> <span class="sbtn">Reject</span></div><div class="slack"><div class="who">Outreach Agent <span class="k">· interested</span></div>🎉 <b>Interested recruiter:</b> Maya at Northlight Animation &lt;maya.chen@northlight-animation.example.com&gt;<br>&gt;Hi! This sounds great, tell me more. Can you set it up for our storyboard role?<br><i>Matched rule: interested</i></div><div class="slack"><div class="who">Outreach Agent <span class="k">· interested</span></div>🎉 <b>Interested recruiter:</b> Leo at Pixelforge Games &lt;leo.martins@pixelforge.example.com&gt;<br>&gt;Interested. Let&#x27;s chat next week about posting our QA openings.<br><i>Matched rule: interested</i></div><div class="slack"><div class="who">Outreach Agent <span class="k">· interested</span></div>🎉 <b>Interested recruiter:</b> Ravi at Studio Meridian &lt;ravi.patel@studio-meridian.example.com&gt;<br>&gt;Sounds good, sign us up for the motion design role.<br><i>Matched rule: interested</i></div></section>
+
+  <section aria-labelledby="rp-h"><h2 id="rp-h">Reply classification</h2>
+    <div class="tbl"><table><thead><tr><th>From</th><th>Reply</th><th>Class</th></tr></thead><tbody><tr><td>Maya, Northlight Animation</td><td>Hi! This sounds great, tell me more. Can you set it up for our storyboard role?</td><td><span class="pill interested">interested</span></td></tr><tr><td>Leo, Pixelforge Games</td><td>Interested. Let&#x27;s chat next week about posting our QA openings.</td><td><span class="pill interested">interested</span></td></tr><tr><td>Priya, Ember FX</td><td>Thanks, but we&#x27;re all set with our current job boards. Not interested.</td><td><span class="pill not_interested">not_interested</span></td></tr><tr><td>Sam, Brightgrid Design</td><td>Please remove me from your list and stop emailing me.</td><td><span class="pill unsubscribe">unsubscribe</span></td></tr><tr><td>Hana, Lumen Interactive</td><td>I am out of the office until Monday with limited access to email.</td><td><span class="pill out_of_office">out_of_office</span></td></tr><tr><td>Diego, Cascade VFX</td><td>Delivery Status Notification (Failure): address not found.</td><td><span class="pill bounce">bounce</span></td></tr><tr><td>Ravi, Studio Meridian</td><td>Sounds good, sign us up for the motion design role.</td><td><span class="pill interested">interested</span></td></tr></tbody></table></div>
+  </section>
+  
+  <section aria-labelledby="db-h"><h2 id="db-h">Dashboard</h2><p class="sub">Served by the reporting workflow at <code>/webhook/report</code>.</p>
+    <div class="frame"><iframe src="dashboard.html" title="Outreach dashboard" loading="lazy"></iframe></div></section>
+
+  <section aria-labelledby="wf-h"><h2 id="wf-h">The workflows</h2><p class="sub">12 n8n workflows, generated from one script and checked with n8n-mcp. The rules that must never break (dedupe, opt-outs, caps, stopping on reply) are enforced by Postgres: <code>db/schema.sql</code>.</p><details><summary>01 Import contacts <small>13 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Webhook: import&quot;])
+  n1[&quot;Parse request&quot;]
+  n2[(&quot;Import (webhook)&quot;)]
+  n3([&quot;Form: upload CSV&quot;])
+  n4[&quot;Read CSV file&quot;]
+  n5[(&quot;Import (form)&quot;)]
+  n6([&quot;Webhook: pull HubSpot&quot;])
+  n7[(&quot;Load settings&quot;)]
+  n8{&quot;Live mode?&quot;}
+  n9[&quot;HubSpot: list contacts&quot;]
+  n10[&quot;Map HubSpot contacts&quot;]
+  n11[(&quot;Import (HubSpot)&quot;)]
+  n12[&quot;HubSpot needs live mode&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n3 --&gt; n4
+  n4 --&gt; n5
+  n6 --&gt; n7
+  n7 --&gt; n8
+  n8 --&gt;|yes| n9
+  n8 --&gt;|no| n12
+  n9 --&gt; n10
+  n10 --&gt; n11
+</pre></details><details><summary>02 Draft emails <small>19 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Every 15 min (weekdays)&quot;])
+  n1([&quot;Webhook: run now&quot;])
+  n2[(&quot;Load settings&quot;)]
+  n3[(&quot;Contacts to draft&quot;)]
+  n4{&quot;Any contacts?&quot;}
+  n5[&quot;Write email&quot;]
+  n6[(&quot;Save draft&quot;)]
+  n7[&quot;Approval message&quot;]
+  n8[(&quot;Approval: save notification&quot;)]
+  n9{&quot;Approval: live?&quot;}
+  n10[&quot;Approval: post to Slack&quot;]
+  n11((&quot;Approval: done&quot;))
+  n12[&quot;Nothing to draft&quot;]
+  n8 --&gt; n9
+  n9 --&gt;|yes| n10
+  n9 --&gt;|no| n11
+  n10 --&gt; n11
+  n6 --&gt; n7
+  n7 --&gt; n8
+  n0 --&gt; n2
+  n1 --&gt; n2
+  n2 --&gt; n3
+  n3 --&gt; n4
+  n4 --&gt;|yes| n5
+  n4 --&gt;|no| n12
+  n5 --&gt; n6
+</pre></details><details><summary>03 Approval link <small>4 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Webhook: approve&quot;])
+  n1[(&quot;Record decision&quot;)]
+  n2[&quot;Result page&quot;]
+  n3[&quot;Respond&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n2 --&gt; n3
+</pre></details><details><summary>04 Send approved emails <small>19 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Every 10 min (weekdays)&quot;])
+  n1([&quot;Webhook: run now&quot;])
+  n2[(&quot;Load settings&quot;)]
+  n3[(&quot;Messages to send&quot;)]
+  n4{&quot;Anything to send?&quot;}
+  n5[&quot;One at a time&quot;]
+  n6[&quot;Compose email&quot;]
+  n7{&quot;Live mode?&quot;}
+  n8{&quot;Follow-up in thread?&quot;}
+  n9[&quot;Gmail: send&quot;]
+  n10[&quot;Gmail: reply in thread&quot;]
+  n11[&quot;SMTP: send to Mailpit&quot;]
+  n12[(&quot;Mark sent&quot;)]
+  n13[(&quot;Mark failed&quot;)]
+  n14{&quot;Update CRM?&quot;}
+  n15[&quot;HubSpot: attempted to contact&quot;]
+  n16[&quot;Pause between sends&quot;]
+  n17[&quot;Nothing to send&quot;]
+  n18[&quot;Send summary&quot;]
+  n0 --&gt; n2
+  n1 --&gt; n2
+  n2 --&gt; n3
+  n3 --&gt; n4
+  n4 --&gt;|yes| n5
+  n4 --&gt;|no| n17
+  n5 --&gt;|done| n18
+  n5 --&gt;|each| n6
+  n6 --&gt; n7
+  n7 --&gt;|yes| n8
+  n7 --&gt;|no| n11
+  n8 --&gt;|yes| n10
+  n8 --&gt;|no| n9
+  n9 --&gt;|ok| n12
+  n9 --&gt;|error| n13
+  n10 --&gt;|ok| n12
+  n10 --&gt;|error| n13
+  n11 --&gt;|ok| n12
+  n11 --&gt;|error| n13
+  n12 --&gt; n14
+  n14 --&gt;|yes| n15
+  n14 --&gt;|no| n16
+  n15 --&gt; n16
+  n13 --&gt; n16
+  n16 --&gt; n5
+</pre></details><details><summary>05 Draft follow-ups <small>20 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Daily 10:00 (weekdays)&quot;])
+  n1([&quot;Webhook: run now&quot;])
+  n2[(&quot;Load settings&quot;)]
+  n3[(&quot;Follow-ups due&quot;)]
+  n4{&quot;Any due?&quot;}
+  n5[&quot;Prepare follow-up&quot;]
+  n6[&quot;Write email&quot;]
+  n7[(&quot;Save draft&quot;)]
+  n8[&quot;Approval message&quot;]
+  n9[(&quot;Approval: save notification&quot;)]
+  n10{&quot;Approval: live?&quot;}
+  n11[&quot;Approval: post to Slack&quot;]
+  n12((&quot;Approval: done&quot;))
+  n13[&quot;Nothing due&quot;]
+  n9 --&gt; n10
+  n10 --&gt;|yes| n11
+  n10 --&gt;|no| n12
+  n11 --&gt; n12
+  n7 --&gt; n8
+  n8 --&gt; n9
+  n0 --&gt; n2
+  n1 --&gt; n2
+  n2 --&gt; n3
+  n3 --&gt; n4
+  n4 --&gt;|yes| n5
+  n4 --&gt;|no| n13
+  n5 --&gt; n6
+  n6 --&gt; n7
+</pre></details><details><summary>06 Process reply (sub) <small>21 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;When called&quot;])
+  n1[(&quot;Load settings&quot;)]
+  n2[(&quot;Record reply&quot;)]
+  n3{&quot;New reply from a contact?&quot;}
+  n4[&quot;Reply details&quot;]
+  n5{&quot;Use mock classifier?&quot;}
+  n6[&quot;Mock classify&quot;]
+  n7[&quot;Build classifier prompt&quot;]
+  n8[&quot;LLM: classify reply&quot;]
+  n9[&quot;Parse classification&quot;]
+  n10[(&quot;Apply classification&quot;)]
+  n11[&quot;Route&quot;]
+  n12{&quot;Interested?&quot;}
+  n13[&quot;Interested alert&quot;]
+  n14[(&quot;Interested: save notification&quot;)]
+  n15{&quot;Interested: live?&quot;}
+  n16[&quot;Interested: post to Slack&quot;]
+  n17((&quot;Interested: done&quot;))
+  n18{&quot;Live CRM update?&quot;}
+  n19[&quot;HubSpot: update lead status&quot;]
+  n20[&quot;Ignored&quot;]
+  n14 --&gt; n15
+  n15 --&gt;|yes| n16
+  n15 --&gt;|no| n17
+  n16 --&gt; n17
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n2 --&gt; n3
+  n3 --&gt;|yes| n4
+  n3 --&gt;|no| n20
+  n4 --&gt; n5
+  n5 --&gt;|yes| n6
+  n5 --&gt;|no| n7
+  n7 --&gt; n8
+  n8 --&gt; n9
+  n9 --&gt; n10
+  n6 --&gt; n10
+  n10 --&gt; n11
+  n11 --&gt; n12
+  n11 --&gt; n18
+  n12 --&gt;|yes| n13
+  n13 --&gt; n14
+  n18 --&gt;|yes| n19
+</pre></details><details><summary>06a Reply monitor (Gmail) <small>3 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Gmail: new message&quot;])
+  n1[&quot;Normalise&quot;]
+  n2[&quot;Process reply&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+</pre></details><details><summary>06b Reply simulator (mock) <small>3 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Webhook: simulate reply&quot;])
+  n1[&quot;Normalise&quot;]
+  n2[&quot;Process reply&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+</pre></details><details><summary>07 Unsubscribe <small>4 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Webhook: unsubscribe&quot;])
+  n1[(&quot;Unsubscribe&quot;)]
+  n2[&quot;Confirmation page&quot;]
+  n3[&quot;Respond&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n2 --&gt; n3
+</pre></details><details><summary>08 Reporting <small>12 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;Weekdays 17:30&quot;])
+  n1([&quot;Webhook: dashboard&quot;])
+  n2[(&quot;Load settings&quot;)]
+  n3[(&quot;Stats&quot;)]
+  n4[&quot;Daily summary&quot;]
+  n5[(&quot;Report: save notification&quot;)]
+  n6{&quot;Report: live?&quot;}
+  n7[&quot;Report: post to Slack&quot;]
+  n8((&quot;Report: done&quot;))
+  n9[(&quot;Dashboard stats&quot;)]
+  n10[&quot;Dashboard page&quot;]
+  n11[&quot;Respond&quot;]
+  n5 --&gt; n6
+  n6 --&gt;|yes| n7
+  n6 --&gt;|no| n8
+  n7 --&gt; n8
+  n0 --&gt; n2
+  n2 --&gt; n3
+  n3 --&gt; n4
+  n4 --&gt; n5
+  n1 --&gt; n9
+  n9 --&gt; n10
+  n10 --&gt; n11
+</pre></details><details><summary>10 Write email (sub) <small>7 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;When called&quot;])
+  n1[(&quot;Load settings&quot;)]
+  n2{&quot;Use mock writer?&quot;}
+  n3[&quot;Mock writer&quot;]
+  n4[&quot;Build prompt&quot;]
+  n5[&quot;LLM: write email&quot;]
+  n6[&quot;Parse LLM output&quot;]
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n2 --&gt;|yes| n3
+  n2 --&gt;|no| n4
+  n4 --&gt; n5
+  n5 --&gt; n6
+</pre></details><details><summary>99 Error handler <small>7 nodes</small></summary><pre class="mermaid">flowchart LR
+  n0([&quot;On workflow error&quot;])
+  n1[(&quot;Load settings&quot;)]
+  n2[&quot;Error message&quot;]
+  n3[(&quot;Error: save notification&quot;)]
+  n4{&quot;Error: live?&quot;}
+  n5[&quot;Error: post to Slack&quot;]
+  n6((&quot;Error: done&quot;))
+  n3 --&gt; n4
+  n4 --&gt;|yes| n5
+  n4 --&gt;|no| n6
+  n5 --&gt; n6
+  n0 --&gt; n1
+  n1 --&gt; n2
+  n2 --&gt; n3
+</pre></details></section>
+
+  <section aria-labelledby="ck-h"><h2 id="ck-h">Automated checks</h2>
+    <div class="tbl"><table><thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead><tbody><tr><td>import counts</td><td><span class="pill ">pass</span></td><td>received 15, imported 12, duplicates 1, suppressed 1, invalid 1</td></tr><tr><td>re-import adds nobody</td><td><span class="pill ">pass</span></td><td>second import: 0 new, 13 duplicates</td></tr><tr><td>one draft per contact</td><td><span class="pill ">pass</span></td><td>12 drafts</td></tr><tr><td>drafting twice creates no duplicates</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>nothing sent before approval</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>approval request for every draft</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>approval link can&#x27;t be reused</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>tampered approval link rejected</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>approved emails sent</td><td><span class="pill ">pass</span></td><td>11 in Mailpit</td></tr><tr><td>unsubscribe link and address in every email</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>sending twice sends nothing new</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>unsubscribe link works</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>replies classified correctly</td><td><span class="pill ">pass</span></td><td>{&quot;maya.chen@northlight-animation.example.com&quot;: &quot;interested&quot;, &quot;leo.martins@pixelforge.example.com&quot;: &quot;interested&quot;, &quot;priya.nair@emberfx.example.com&quot;: &quot;not_interested&quot;, &quot;sam.okafor@brightgrid.example.com&quot;: &quot;unsubscribe&quot;, &quot;hana.sato@lumen-interactive.example.com&quot;: &quot;out_of_office&quot;, &quot;diego.ruiz@cascadevfx.example.com&quot;: &quot;bounce&quot;}</td></tr><tr><td>same reply processed once</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>Slack alert for each interested recruiter</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>follow-ups only for non-responders</td><td><span class="pill ">pass</span></td><td>amara.diallo@paperkite.example.com, ella.brooks@quietmoth.example.com, nina.kowalski@foxglove-games.example.com, olu.adeyemi@ironbark.example.com, ravi.patel@studio-meridian.example.com</td></tr><tr><td>follow-ups sent</td><td><span class="pill ">pass</span></td><td>16 emails in Mailpit</td></tr><tr><td>suppressed addresses never emailed again</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>reply after follow-up stops the sequence</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>dashboard renders</td><td><span class="pill ">pass</span></td><td></td></tr><tr><td>no duplicate contacts in the database</td><td><span class="pill ">pass</span></td><td></td></tr></tbody></table></div></section>
+
+  <footer>The sample brand, recruiters and studios are fictional. Source code is in a private repository, available on request.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:false,theme:'neutral'});document.querySelectorAll('details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)mermaid.run({nodes:d.querySelectorAll('.mermaid:not([data-processed])')})}));</script>
+</body></html>
